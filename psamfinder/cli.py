@@ -64,8 +64,11 @@ def scan(
             typer.echo("Cancelled")
             raise typer.Exit(0)
         
-        delete_duplicates(duplicates)
-        typer.echo("Selected duplicates removed")
-    else:
-        typer.echo("\nUse --delete to remove copies after review")
+        deleted_anything = delete_duplicates(duplicates)
+        if deleted_anything:
+            typer.echo("Selected duplicates removed")
+        else:
+            typer.echo("No files deleted (all groups skipped or invalid choices)")
+    # else:
+    #     typer.echo("\nUse --delete to remove copies after review")
         
