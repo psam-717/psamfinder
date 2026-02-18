@@ -94,4 +94,6 @@ Files of interest:
 - No license file included in the repository. Add a LICENSE file (for example MIT or Apache-2.0) to clarify terms.
 
 ## Contact
-- No maintainer information is provided in the repository. Add an AUTHORS or maintainers section to pyproject.toml if desired.
+Author:
+- Marvinphil Annorbah(psam) (GitHub: [@psam-717](https://github.com/psam-717))
+
