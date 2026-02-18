@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "psamfinder"
+version = "0.1.0"
+description = "File duplicate finder"
+requires-python = ">=3.8"
+
+[project.scripts]
+psamfinder = "psamfinder.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["psamfinder"]
+
+include = [
+  "finder.py",
+]
+
+[tool.pylint.MASTER]
+init-hook = "import sys; sys.path.append('.')"
