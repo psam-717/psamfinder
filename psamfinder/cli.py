@@ -45,6 +45,11 @@ def scan(
         False,
         "--quiet", "-q",
         help="Only show duplicate groups - no scanning message"
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run", "-n",
+        help="Simulate deletion: show which files would be removed without touching anything"
     )
 ):
     """Scan directories (and subdirectories) for files with identical content"""
@@ -64,8 +69,10 @@ def scan(
             typer.echo("Cancelled")
             raise typer.Exit(0)
         
-        deleted_anything = delete_duplicates(duplicates)
-        if deleted_anything:
+        deleted_anything = delete_duplicates(duplicates, dry_run=dry_run)
+        if dry_run:
+            typer.echo("\nDry run complete — no files were actually deleted.")
+        elif deleted_anything:
             typer.echo("Selected duplicates removed")
         else:
             typer.echo("No files deleted (all groups skipped or invalid choices)")
