@@ -46,7 +46,7 @@ def print_duplicates(duplicates):
             print(f" - {path}")
         print()
 
-def delete_duplicates(duplicates): 
+def delete_duplicates(duplicates, dry_run: bool = False): 
     """Prompt the user to delete duplicates, keeping one per group"""
     any_deleted = False
     
@@ -54,7 +54,7 @@ def delete_duplicates(duplicates):
         print(f"Duplicates for hash {file_hash}")
         for i, path in enumerate(paths, 1):
             print(f" {i}. {path}")
-        keep = input("enter number to keep (1-{}), or 'skip' to keep all: ".format(len(paths))).strip()
+        keep = input(f"\nenter number to keep (1-{len(paths)}), or 'skip' to keep all: ").strip()
         
         if keep.lower() == 'skip':
             continue
@@ -65,9 +65,12 @@ def delete_duplicates(duplicates):
                 deleted_count = 0
                 for i, path in enumerate(paths):
                     if i != keep_idx:
-                        os.remove(path)
-                        print(f"Deleted: {path}")
-                        deleted_count += 1
+                        if dry_run:
+                            print(f"Would have deleted: {path}")
+                        else:
+                            os.remove(path)
+                            print(f"Deleted: {path}")
+                            deleted_count += 1
                 if deleted_count > 0:
                     any_deleted = True
             else:
