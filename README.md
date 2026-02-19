@@ -10,7 +10,7 @@ psamfinder is a lightweight CLI tool that recursively scans directories for file
 - hatchling (for building, referenced in pyproject.toml)
 
 ## Installation
-Once published:
+**From PyPI (recommended):**
 ```bash
 pip install psamfinder
 # or for isolated CLI install (recommended)
@@ -25,10 +25,10 @@ pip install -e .
 
 ## Running
 - As a CLI (installed entry point):
-  psamfinder scan <DIRECTORY> [--delete] [-q]
+  psamfinder scan <DIRECTORY> [--delete] [--dry-run] [-q]
 
 - From source:
-  python -m psamfinder
+  python -m psamfinder scan <DIRECTORY> [--delete] [--dry-run] [-q]
 
 Examples:
 - Scan a directory and list duplicates:
@@ -36,6 +36,10 @@ Examples:
 
 - Scan and interactively delete duplicates (asks which file to keep per group):
   psamfinder scan C:\path\to\dir --delete
+
+- Preview deletion without actually removing files (dry-run mode)
+  psamfinder scan C:\path\to\dir --delete --dry-run
+  # Shows "Would have deleted: ..." for each file that would be removed
 
 - Quiet scan (suppresses the scanning line):
   psamfinder scan C:\path\to\dir -q
@@ -82,9 +86,12 @@ Files of interest:
     - If input is invalid (non-integer or out of bounds) it prints a message and skips deletion for that group (lines 65-68).
 
 ## Notes, gotchas, and suggestions
-- compute_hash uses a 4 KiB read buffer; this is a reasonable trade-off between memory usage and speed. For very large files or performance-sensitive use cases, consider tuning the chunk size or using a faster hashing approach.
+- compute_hash uses a 4 KiB read buffer; this is a reasonable trade-off between memory usage and speed. 
 - Files that cannot be read due to permissions or that disappear during scanning are skipped and reported to stderr by compute_hash (the hash function returns None on these errors).
-- The deletion flow is interactive and destructive: ensure backups or use version control if accidental deletion is a concern.
+- Deletion is interactive and destructive — always use --dry-run first when testing
+- Use backups or version control before running with --delete without --dry-run
+- Duplicates are detected strictly by content hash — identical content but different metadata is still considered duplicate
+- --dry-run only affects deletion; scanning and listing always happen normally
 - The CLI `--delete` option first requests a confirmation prompt; deletion then asks which single file to keep in each group.
 - The tool identifies duplicates strictly by file content hash. Files with identical content but different metadata (timestamps, permissions, names) are considered duplicates.
 
@@ -99,7 +106,6 @@ Files of interest:
 - Contributions via pull requests are welcome. Add tests and update the README with usage examples for new features.
 
 ## License
-
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
