@@ -4,9 +4,25 @@ build-backend = "hatchling.build"
 
 [project]
 name = "psamfinder"
-version = "0.1.0"
-description = "File duplicate finder"
+version = "0.2.0"
+description = "Command-line tool to find and optionally delete duplicate files by content (SHA-256)"
+readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.8"
+authors = [{name = "Marvinphil Annorbah (psam)", email = "mphilannorbah@gmail.com"}]
+keywords = ["duplicate-files", "file-duplicates", "sha256", "cli", "disk-cleanup"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Topic :: Utilities",
+    "Intended Audience :: End Users/Desktop",
+]
+
+[project.urls]
+Homepage = "https://github.com/psam-717"  # ← update to your real repo URL
+Repository = "https://github.com/psam-717/psamfinder"
 
 [project.scripts]
 psamfinder = "psamfinder.cli:app"
