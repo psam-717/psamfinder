@@ -44,7 +44,7 @@ Examples:
 
 Files of interest:
 - pyproject.toml
-  - Project metadata: name `psamfinder`, version `0.1.0`, description "File duplicate finder".
+  - Project metadata: name `psamfinder`, version `0.3.0`, description "File duplicate finder".
   - Entry point: `psamfinder = "psamfinder.cli:app"` (Typer app).
   - Build system: hatchling.
 
