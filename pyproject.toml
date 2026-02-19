@@ -20,8 +20,12 @@ classifiers = [
     "Intended Audience :: End Users/Desktop",
 ]
 
+dependencies = [
+    "typer==0.24.0",  # or whatever version you developed with; >=0.9 is safe
+]
+
 [project.urls]
-Homepage = "https://github.com/psam-717"  # ← update to your real repo URL
+Homepage = "https://github.com/psam-717/psamfinder"  # ← update to your real repo URL
 Repository = "https://github.com/psam-717/psamfinder"
 
 [project.scripts]
@@ -30,9 +34,9 @@ psamfinder = "psamfinder.cli:app"
 [tool.hatch.build.targets.wheel]
 packages = ["psamfinder"]
 
-include = [
-  "finder.py",
-]
+# include = [
+#   "finder.py",
+# ]
 
 [tool.pylint.MASTER]
 init-hook = "import sys; sys.path.append('.')"
