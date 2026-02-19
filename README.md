@@ -1,5 +1,8 @@
 # psamfinder — File duplicate finder
 
+[![PyPI](https://img.shields.io/pypi/v/psamfinder)](https://pypi.org/project/psamfinder/)
+[![Python](https://img.shields.io/pypi/pyversions/psamfinder)](https://pypi.org/project/psamfinder/)
+
 psamfinder is a lightweight CLI tool that recursively scans directories for files with identical content (using SHA-256 hashing) and helps you manage duplicates interactively.
 
 ## Requirements
