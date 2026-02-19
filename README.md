@@ -1,19 +1,24 @@
 # psamfinder — File duplicate finder
 
-psamfinder is a small command-line tool that scans a directory recursively and identifies files with identical content using a SHA-256 checksum. It is packaged as a Python project (pyproject.toml) with an entry point `psamfinder` (typer-based CLI).
+psamfinder is a lightweight CLI tool that recursively scans directories for files with identical content (using SHA-256 hashing) and helps you manage duplicates interactively.
 
 ## Requirements
 - Python 3.8+
 - hatchling (for building, referenced in pyproject.toml)
 
-## Installation (development)
-1. Clone or copy this repository to your machine.
-2. (Optional) Create and activate a virtual environment:
+## Installation
+Once published:
+```bash
+pip install psamfinder
+# or for isolated CLI install (recommended)
+pipx install psamfinder
 
-   python -m venv .venv
-   .\.venv\Scripts\activate
 
-3. Install dependencies (if any) or run directly from source.
+# For development/ from source
+git clone https://github.com/psam-717/psamfinder.git
+cd psamfinder
+pip install -e .
+
 
 ## Running
 - As a CLI (installed entry point):
@@ -91,7 +96,8 @@ Files of interest:
 - Contributions via pull requests are welcome. Add tests and update the README with usage examples for new features.
 
 ## License
-- No license file included in the repository. Add a LICENSE file (for example MIT or Apache-2.0) to clarify terms.
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
 Author:
