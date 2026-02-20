@@ -1,7 +1,9 @@
 from pathlib import Path
+from typing import Optional
 import typer
+from importlib.metadata import version as pkg_version
 
-# from file_duplicate_finder import fin
+__version__ = pkg_version("psamfinder")
 
 from psamfinder.finder import (
     find_duplicates,
@@ -9,15 +11,32 @@ from psamfinder.finder import (
     delete_duplicates
 )
 
-app = typer.Typer(
+app = typer.Typer( # pylint: disable=unexpected-keyword-arg
     name="psamfinder",
     help="Find duplicate files by content (SHA-256)",
     add_completion=True,
-    no_args_is_help=True
+    no_args_is_help=True,
+    invoke_without_command=True,
+
 )
 
+
+def version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"{app.info.name} {__version__}")
+        raise typer.Exit(0)
+
 @app.callback(invoke_without_command=True)   # ← this makes it a group
-def main(ctx: typer.Context):
+def main(
+    ctx: typer.Context,
+    version: Optional[bool] = typer.Option(  # pylint: disable=unused-argument
+        None,
+        "--version", "-V",
+        callback=version_callback,
+        is_eager=True,
+        help="Show the version and exit"
+    )
+):
     """
     Find duplicate files by content (SHA-256).
     Use 'scan' to start searching a directory.
@@ -25,6 +44,8 @@ def main(ctx: typer.Context):
     if ctx.invoked_subcommand is None:
         typer.echo(ctx.get_help())
         raise typer.Exit()
+
+
 
 @app.command()
 def scan(
