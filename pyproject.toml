@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "psamfinder"
-version = "0.3.1"
+version = "0.3.2"
 description = "Command-line tool to find and optionally delete duplicate files by content (SHA-256)"
 readme = "README.md"
 license = {file = "LICENSE"}

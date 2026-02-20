@@ -41,6 +41,9 @@ Examples:
   psamfinder scan C:\path\to\dir --delete --dry-run
   # Shows "Would have deleted: ..." for each file that would be removed
 
+- Show installed version:
+  psamfinder --version
+
 - Quiet scan (suppresses the scanning line):
   psamfinder scan C:\path\to\dir -q
 
@@ -48,8 +51,8 @@ Examples:
 
 Files of interest:
 - pyproject.toml
-  - Project metadata: name `psamfinder`, version `0.3.1`, description "File duplicate finder".
-  - Entry point: `psamfinder = "psamfinder.cli:app"` (Typer app).
+  - Project metadata: name `psamfinder`, version `0.3.2`, description "Command-line tool to find and optionally delete duplicate files by content (SHA-256)".
+  - Entry point: `psamfinder = "psamfinder.cli:app"` (Typer app). The CLI supports a `--version` / `-V` option that prints the installed psamfinder version and exits.
   - Build system: hatchling.
 
 - psamfinder/__main__.py
