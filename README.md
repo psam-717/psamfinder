@@ -1,126 +1,235 @@
-# psamfinder — File duplicate finder
+# psamfinder — Duplicate File Finder
 
 [![PyPI](https://img.shields.io/pypi/v/psamfinder)](https://pypi.org/project/psamfinder/)
 [![Python](https://img.shields.io/pypi/pyversions/psamfinder)](https://pypi.org/project/psamfinder/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-psamfinder is a lightweight CLI tool that recursively scans directories for **exact duplicate files** (using SHA-256 hashing) **and near-duplicate images** (using perceptual hashing when enabled).
+**psamfinder** is a fast, lightweight CLI tool that recursively scans directories for:
 
-## Requirements
-- Python 3.8+
-- hatchling (for building, referenced in pyproject.toml)
+- 🔍 **Exact duplicate files** — identified by SHA-256 content hash
+- 🖼️ **Near-duplicate images** — detected via perceptual hashing (optional)
+
+---
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Commands](#commands)
+  - [scan](#scan)
+  - [threshold](#threshold)
+- [Examples](#examples)
+- [How It Works](#how-it-works)
+- [Project Structure](#project-structure)
+- [Building from Source](#building-from-source)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
 
 ## Installation
-**From PyPI (recommended):**
+
+### From PyPI (recommended)
+
 ```bash
 pip install psamfinder
-# or for isolated CLI install (recommended)
+
+# Isolated install with pipx (keeps your global Python clean)
 pipx install psamfinder
+```
 
-# With fuzzy (perceptual) image duplicate detection support:
+### With fuzzy image duplicate detection
+
+Fuzzy mode requires extra dependencies (`imagehash` + `Pillow`):
+
+```bash
 pip install "psamfinder[fuzzy]"
-# or
+
+# or with pipx
 pipx install "psamfinder[fuzzy]"
+```
 
+### From source (development)
 
-# For development/ from source
+```bash
 git clone https://github.com/psam-717/psamfinder.git
 cd psamfinder
-pip install -e .
-pip install -e ".[fuzzy]" # with fuzzy image support
 
+pip install -e .                  # exact duplicates only
+pip install -e ".[fuzzy]"         # with fuzzy image support
+```
 
-## Running
-- Basic scan (exact duplicates only)
-  psamfinder scan <DIRECTORY>
+---
 
-- Scan + interactive deletion
-  psamfinder scan <DIRECTORY> --delete
+## Quick Start
 
-- Dry-run deletion preview
-psamfinder scan <DIRECTORY> --delete --dry-run
+```bash
+# Scan a directory for exact duplicates
+psamfinder scan ~/Downloads
 
-- Quiet mode (no "Scanning..." message)
-psamfinder scan <DIRECTORY> -q
+# Find and interactively delete duplicates
+psamfinder scan ~/Downloads --delete
 
-- Fuzzy/perceptual image duplicate detection (near-duplicates, resized/cropped, etc.)
-psamfinder scan <DIRECTORY> --fuzzy-images --similarity-threshold 0.82
-
-- Help choose a good similarity threshold by analyzing your images
-psamfinder threshold <DIRECTORY> [--max-images 300] [--verbose]
-
-Examples:
-- List exact duplicates
-psamfinder scan ~/Photos
-
-- Find near-duplicate photos (good for resized/edited versions)
-psamfinder scan ~/Photos --fuzzy-images --similarity-threshold 0.80
-
-- Analyze similarity distribution to pick a threshold
-psamfinder threshold ~/Photos --max-images 500 --verbose
-
-- Dry-run deletion of exact duplicates
+# Preview what would be deleted (safe dry-run)
 psamfinder scan ~/Downloads --delete --dry-run
 
-- Show version
+# Find near-duplicate images (resized, recompressed, cropped)
+psamfinder scan ~/Photos --fuzzy-images --similarity-threshold 0.82
+```
+
+---
+
+## Commands
+
+### `scan`
+
+Recursively scans a directory for duplicate files and optionally deletes them.
+
+```
+psamfinder scan <DIRECTORY> [OPTIONS]
+```
+
+| Option | Short | Default | Description |
+|--------|-------|---------|-------------|
+| `--delete` | `-d` | `False` | Prompt to delete copies after listing duplicates |
+| `--dry-run` | `-n` | `False` | Preview which files would be deleted, without touching anything |
+| `--quiet` | `-q` | `False` | Suppress the "Scanning…" status message |
+| `--fuzzy-images` | | `False` | Use perceptual hashing for near-duplicate image detection |
+| `--similarity-threshold` | | `0.80` | Similarity cutoff for fuzzy mode (`0.0`–`1.0`); try `0.75`–`0.85` for resized photos |
+
+> **Tip:** Always run with `--dry-run` first. Deletion is interactive but **permanent**.
+
+---
+
+### `threshold`
+
+Analyzes pairwise image similarity in a directory to help you choose an appropriate `--similarity-threshold` value before running a fuzzy scan.
+
+```
+psamfinder threshold <DIRECTORY> [OPTIONS]
+```
+
+| Option | Short | Default | Description |
+|--------|-------|---------|-------------|
+| `--max-images` | | `300` | Maximum number of images to process (`0` = no limit) |
+| `--quiet` | `-q` | `False` | Suppress the "Analyzing…" status message |
+| `--verbose` | `-v` | `False` | Show all pairs and a full distance distribution |
+
+> **Note:** This command is read-only — it never modifies or deletes any files.
+
+---
+
+## Examples
+
+```bash
+# List exact duplicates in a folder
+psamfinder scan ~/Documents
+
+# Find near-duplicate photos and interactively remove copies
+psamfinder scan ~/Photos --fuzzy-images --similarity-threshold 0.80 --delete
+
+# Dry-run: preview deletions without removing anything
+psamfinder scan ~/Downloads --delete --dry-run
+
+# Analyze your image library to pick the right fuzzy threshold
+psamfinder threshold ~/Photos --max-images 500 --verbose
+
+# Quiet scan — only print duplicate groups, no status messages
+psamfinder scan ~/Music -q
+
+# Show installed version
 psamfinder --version
+```
 
-## How the code works (high-level overview)
+---
 
-**Key files & responsibilities**
+## How It Works
 
-- `pyproject.toml`
-  - Project metadata, version (now 0.3.6), MIT license
-  - Console entry point: `psamfinder = "psamfinder.cli:app"`
-  - Optional `[fuzzy]` extra: `imagehash` + `pillow` for perceptual image detection
+### Exact duplicate detection (default)
 
-- `psamfinder/cli.py`
-  - Typer-based CLI with two commands:
-    - `scan` — finds duplicates (exact or fuzzy), lists them, offers interactive deletion
-      Flags: `--delete`, `--dry-run`, `--quiet`, `--fuzzy-images`, `--similarity-threshold`
-    - `threshold` — analyzes pairwise image similarities to help choose a good fuzzy threshold
-      Flags: `--max-images`, `--quiet`, `--verbose`
-  - `--version` / `-V` shows package version
+1. Walks the target directory recursively.
+2. Computes a **SHA-256 hash** of each file's raw content (in 4 KiB chunks).
+3. Groups files that share the same hash — these are byte-for-byte identical, regardless of filename or metadata.
 
-- `psamfinder/finder.py`
-  - `compute_hash()` — SHA-256 of file content (4 KiB chunks), skips on permission/IO errors
-  - `find_duplicates(directory, fuzzy_images=False, similarity_threshold=0.80)`
-    - **Exact mode** (default): groups files by identical SHA-256 hash → `List[List[str]]`
-    - **Fuzzy mode** (`--fuzzy-images`): uses perceptual hashing (`phash`) on images only
-      - Groups near-duplicates using union-find + Hamming distance threshold
-      - Returns `List[List[str]]` of similar-image groups
-  - `print_duplicates(dupe_groups: List[List[str]])` — clean grouped output
-  - `delete_duplicates(dupe_groups: List[List[str]], dry_run=False)` — interactive keep/skip per group
+### Fuzzy / perceptual image detection (`--fuzzy-images`)
 
-**Main behavioral changes**
-- Duplicate groups are now consistently returned and handled as `List[List[str]]` (no more hash dict)
-- Fuzzy mode requires `pip install psamfinder[fuzzy]` and only processes common image formats
-- New `threshold` command helps tune `--similarity-threshold` by showing similar pairs and distribution
+1. Collects image files with common extensions (`.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`).
+2. Computes a **perceptual hash (pHash)** for each image using `imagehash`.
+3. Compares all pairs using **Hamming distance** — the number of differing bits.
+4. Groups near-duplicates using a **union-find** data structure based on the configured similarity threshold.
 
-## Important notes & gotchas
-- Always test with `--dry-run` — deletion is interactive and permanent
-- Make backups before using `--delete` without `--dry-run`
-- Exact mode ignores metadata (only content matters)
-- Fuzzy mode is perceptual — good for resized/cropped/recompressed images, but may include false positives depending on threshold
-- `threshold` command is read-only (no deletion)
-- Skipped files (permissions, corrupt images, etc.) are logged to stderr
+The similarity score is derived from the Hamming distance over 64 bits:
 
-## Packaging
-Configured with `pyproject.toml` + hatchling.  
-Build: `hatch build` or `python -m build`
+```
+similarity = 1 - (hamming_distance / 64)
+```
 
-## Contributing & future ideas
-- Add tests (hashing, grouping, fuzzy logic, deletion flows)
-- Auto-keep rules (newest/largest/shortest-path/regex)
-- Progress bar or parallel processing for large directories
-- JSON/CSV report export
-- Better error handling & summary stats
+| Threshold | Use case |
+|-----------|----------|
+| `0.90`–`0.95` | Near-exact matches only |
+| `0.75`–`0.85` | Resized, cropped, or recompressed versions |
+| `0.65`–`0.74` | Lenient — may include false positives |
 
-Pull requests welcome — include tests and update README examples for new features.
+Use `psamfinder threshold` to inspect your image library's similarity distribution before committing to a threshold.
+
+---
+
+## Project Structure
+
+```
+psamfinder/
+├── cli.py        # Typer CLI — defines scan and threshold commands
+├── finder.py     # Core logic — hashing, grouping, printing, deletion
+└── __init__.py
+pyproject.toml    # Package metadata, dependencies, build config
+```
+
+**`finder.py` key functions:**
+
+| Function | Description |
+|----------|-------------|
+| `compute_hash(filepath)` | SHA-256 hash of a file; returns `None` on permission/IO errors |
+| `find_duplicates(directory, fuzzy_images, similarity_threshold)` | Returns `List[List[str]]` of duplicate groups |
+| `print_duplicates(dupe_groups)` | Prints groups in a clean, numbered format |
+| `delete_duplicates(dupe_groups, dry_run)` | Interactive per-group deletion; prompts user to pick which file to keep |
+
+---
+
+## Building from Source
+
+psamfinder uses [Hatchling](https://hatch.pypa.io/) as its build backend.
+
+```bash
+pip install hatch
+hatch build          # produces dist/ with wheel and sdist
+
+# or with build directly
+python -m build
+```
+
+---
+
+## Contributing
+
+Pull requests are welcome! Here are some ideas for future improvements:
+
+- ✅ Unit tests (hashing, grouping, fuzzy logic, deletion flows)
+- 🔢 Auto-keep rules (newest / largest / shortest path / regex match)
+- ⚡ Progress bar or parallel processing for large directories
+- 📄 JSON / CSV report export
+- 📊 Better summary statistics after a scan
+
+Please include tests with your PR and update the README examples if you add new features.
+
+---
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Contact
-Author:
-- Marvinphil Annorbah(psam) (GitHub: [@psam-717](https://github.com/psam-717))
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Author
+
+**Marvinphil Annorbah (psam)** · GitHub: [@psam-717](https://github.com/psam-717)
 
